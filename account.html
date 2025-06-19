@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tài Khoản - GameVault</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Style cho modal ảnh phóng to */
+    #receipt-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+    }
+    #receipt-modal.active {
+      display: flex;
+    }
+    #receipt-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border: 2px solid var(--neon-color, #00f0ff);
+      border-radius: 12px;
+      box-shadow: 0 0 24px var(--neon-color, #00f0ff);
+      cursor: pointer;
+      object-fit: contain; /* Đảm bảo ảnh không bị méo */
+    }
+    /* Style cho danh sách giao dịch */
+    #transaction-list .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #1a1a1a;
+      border-radius: 8px;
+    }
+    #transaction-list .transaction-item img {
+      max-width: 100px;
+      max-height: 100px;
+      object-fit: cover; /* Đảm bảo ảnh hiển thị đẹp */
+      cursor: pointer;
+      border: 1px solid var(--neon-color, #00f0ff);
+    }
+    #transaction-list .transaction-actions button {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <nav class="navbar">
+      <button class="home-btn" onclick="window.location.href='index.html'">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/home_button.png" alt="Gamevault">
+      </button>
+      <div class="auth-buttons">
+        <button class="auth-btn neon-btn" onclick="openAuthModal()">Đăng ký/Đăng nhập</button>
+      </div>
+      <div class="user-info" onclick="goToAccount()" style="display: none;">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/gamer.png" alt="Avatar" class="user-avatar">
+        <span class="username"></span>
+      </div>
+      <div class="header-buttons">
+        <button class="search-btn neon-btn" onclick="openSearchModal()">🔍</button>
+        <button class="cart-btn neon-btn" onclick="goToCart()">🛒</button>
+        <button class="top-up-btn neon-btn" onclick="openTopUpModal()">💳</button>
+        <button class="globe-btn neon-btn" onclick="toggleLanguageMenu()">🌐</button>
+        <button class="theme-toggle neon-btn" onclick="toggleTheme()">🌙</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="account-main">
+    <div class="account-container">
+      <aside class="account-menu">
+        <ul>
+          <li class="menu-item active" onclick="switchContentSection('account-details')">Thông tin tài khoản</li>
+          <li class="menu-item" onclick="switchContentSection('order-history')">Lịch sử đơn hàng</li>
+          <li class="menu-item" onclick="switchContentSection('vouchers')">Voucher</li>
+          <li class="menu-item" onclick="switchContentSection('notifications')">Thông báo</li>
+          <li class="menu-item" onclick="openAdminModal()">Quản trị viên</li>
+          <li class="menu-item admin-only" onclick="window.location.href='manage_products.html'">Quản lý sản phẩm</li>
+          <li class="menu-item" id="admin-transaction-menu" style="display:none" onclick="switchContentSection('manage-transactions')">Quản lý giao dịch nạp tiền</li>
+          <li class="menu-item" onclick="logout()">Đăng xuất</li>
+        </ul>
+      </aside>
+      <section class="account-content">
+        <div id="account-details" class="content-section active">
+          <h2 class="neon-text">Thông tin tài khoản</h2>
+          <div class="avatar-section">
+            <img id="account-avatar" src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/gamer.png" alt="Avatar" class="avatar-circle">
+            <input id="avatar-url" class="neon-input" type="text" placeholder="URL ảnh avatar" oninput="previewAvatar()">
+            <input id="avatar-file" type="file" accept="image/*" onchange="uploadAvatarFromFile()">
+            <button class="neon-btn" onclick="saveAvatar()">Lưu Avatar</button>
+          </div>
+          <div class="account-form">
+            <label>Tên đăng nhập</label>
+            <input id="account-username" class="neon-input" type="text" placeholder="Tên đăng nhập">
+            <label>Số dư tài khoản</label>
+            <input id="account-balance-info" class="neon-input" type="text" readonly style="background:#222b3a; color:#ffea00; font-weight:bold;">
+            <label>Giới tính</label>
+            <select id="account-gender" class="neon-select">
+              <option value="male">Nam</option>
+              <option value="female">Nữ</option>
+              <option value="other">Khác</option>
+            </select>
+            <label>Email</label>
+            <input id="account-email" class="neon-input" type="email" placeholder="Email">
+            <label>Số điện thoại</label>
+            <input id="account-phone" class="neon-input" type="tel" placeholder="Số điện thoại">
+            <label>Địa điểm vận chuyển:</label>
+            <input type="text" id="account-location" class="neon-input" value="Thành Phố Hồ Chí Minh">
+            <button class="neon-btn" onclick="saveAccountDetails()">Lưu thông tin</button>
+          </div>
+          <div class="password-section">
+            <h3>Đổi mật khẩu</h3>
+            <input id="current-password" class="neon-input" type="password" placeholder="Mật khẩu hiện tại">
+            <input id="new-password" class="neon-input" type="password" placeholder="Mật khẩu mới">
+            <input id="confirm-password" class="neon-input" type="password" placeholder="Xác nhận mật khẩu mới">
+            <button class="neon-btn" onclick="changePassword()">Đổi mật khẩu</button>
+          </div>
+          <button class="neon-btn danger" onclick="deleteUser()">Xóa tài khoản</button>
+        </div>
+        <div id="order-history" class="content-section">
+          <h2 class="neon-text">Lịch sử đơn hàng</h2>
+          <div id="order-list"></div>
+        </div>
+        <div id="vouchers" class="content-section">
+          <h2 class="neon-text">Voucher</h2>
+          <div id="voucher-list"></div>
+        </div>
+        <div id="notifications" class="content-section">
+          <h2 class="neon-text">Thông báo</h2>
+          <div id="notification-list"></div>
+        </div>
+        <div id="manage-transactions" class="content-section">
+          <h2 class="neon-text">Quản lý giao dịch nạp tiền</h2>
+          <p>Duyệt hoặc từ chối các giao dịch nạp tiền bằng chuyển khoản từ người dùng.</p>
+          <div id="transaction-list"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>© 2025 GameVault. Bảo lưu mọi quyền.</p>
+      <div class="footer-links">
+        <a href="#">Về Chúng Tôi</a> | <a href="#">Điều khoản Dịch Vụ</a> | <a href="#">Chính Sách Bảo Mật</a> | <a href="#">Liên Hệ</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modals -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('auth-modal')">×</span>
+      <h2 id="modal-title">Đăng nhập</h2>
+      <input id="auth-username" class="neon-input" type="text" placeholder="Tên đăng nhập">
+      <input id="auth-password" class="neon-input" type="password" placeholder="Mật khẩu">
+      <button class="neon-btn" onclick="handleAuth()">Xác nhận</button>
+      <p class="toggle-auth" onclick="toggleAuthMode()">Chưa có tài khoản? Đăng ký!</p>
+    </div>
+  </div>
+
+  <div class="modal" id="top-up-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('top-up-modal')">×</span>
+      <h2>Nạp tiền</h2>
+      <div class="payment-methods">
+        <label><input type="radio" name="payment-method" value="card" checked> Thẻ nạp</label>
+        <label><input type="radio" name="payment-method" value="bank"> Chuyển khoản ngân hàng</label>
+        <label><input type="radio" name="payment-method" value="wallet"> Ví điện tử</label>
+        <label><input type="radio" name="payment-method" value="credit"> Thẻ tín dụng</label>
+      </div>
+      <div id="card-payment" class="payment-form">
+        <select id="card-type" class="neon-select">
+          <option value="viettel">Viettel Money</option>
+          <option value="mobifone">MobiFone</option>
+          <option value="vinaphone">VinaPhone</option>
+          <option value="gate">Gate</option>
+          <option value="zing">Zing</option>
+        </select>
+        <input type="text" id="card-code" class="neon-input" placeholder="Mã thẻ">
+        <input type="text" id="card-serial" class="neon-input" placeholder="Số seri">
+      </div>
+      <div id="bank-payment" class="payment-form" style="display: none;">
+        <p>Thông tin chuyển khoản:</p>
+        <p>Ngân hàng: Vietcombank</p>
+        <p>Số tài khoản: 12345678901234</p>
+        <p>Chủ tài khoản: Nguyễn Việt Khôi</p>
+        <input id="bank-amount" type="number" class="neon-input" placeholder="Số tiền">
+        <input id="bank-receipt" type="file" accept="image/*">
+        <img id="bank-receipt-preview" src="" alt="Biên lai" style="display: none; max-width: 100px;">
+      </div>
+      <div id="wallet-payment" class="payment-form" style="display: none;">
+        <p>Chọn ví điện tử: Momo, ZaloPay, Viettel Pay</p>
+        <input type="text" id="wallet-id" class="neon-input" placeholder="ID ví điện tử">
+        <input type="number" id="wallet-amount" class="neon-input" placeholder="Số tiền (VNĐ)">
+      </div>
+      <div id="credit-payment" class="payment-form" style="display: none;">
+        <input type="text" id="credit-card-number" class="neon-input" placeholder="Số thẻ tín dụng">
+        <input type="text" id="credit-expiry" class="neon-input" placeholder="Ngày hết hạn (MM/YY)">
+        <input type="text" id="credit-cvv" class="neon-input" placeholder="CVV">
+      </div>
+      <button class="neon-btn" onclick="processTopUp()">Xác nhận</button>
+    </div>
+  </div>
+
+  <div id="search-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('search-modal')">×</span>
+      <h2>Tìm kiếm</h2>
+      <input id="search-input" class="neon-input" type="text" placeholder="Nhập tên sản phẩm hoặc game">
+      <button class="neon-btn" onclick="searchProducts()">Tìm</button>
+      <div id="search-results" class="product-list"></div>
+    </div>
+  </div>
+
+  <div id="language-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('language-modal')">×</span>
+      <h2>Chọn Ngôn Ngữ</h2>
+      <div class="language-options">
+        <label><input type="radio" name="language" value="vi"> Tiếng Việt</label>
+        <label><input type="radio" name="language" value="en"> English</label>
+        <label><input type="radio" name="language" value="ja"> 日本語</label>
+      </div>
+      <button class="neon-btn" onclick="saveLanguage()">Chọn</button>
+    </div>
+  </div>
+
+  <div id="admin-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('admin-modal')">×</span>
+      <h2>Đăng nhập Quản trị viên</h2>
+      <input id="admin-key1" class="neon-input" type="password" placeholder="Key 1">
+      <input id="admin-key2" class="neon-input" type="password" placeholder="Key 2">
+      <input id="admin-key3" class="neon-input" type="password" placeholder="Key 3">
+      <button class="neon-btn" onclick="handleAdminLogin()">Xác nhận</button>
+    </div>
+  </div>
+
+  <!-- Receipt Preview Modal -->
+  <div class="modal" id="receipt-modal">
+    <img id="receipt-modal-img" src="" alt="Biên lai phóng to">
+  </div>
+
+  <div id="toast" class="toast" style="display: none;"></div>
+
+  <script src="js/scripts.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const isAdmin = JSON.parse(localStorage.getItem('isAdmin') || 'false');
+      if (isAdmin) {
+        document.getElementById('admin-transaction-menu').style.display = '';
+        document.getElementById('manage-transactions').style.display = '';
+        if (typeof loadTransactions === 'function') loadTransactions();
+      }
+    });
+
+    function renderAccountBalance() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const balanceInput = document.getElementById('account-balance-info');
+      if (balanceInput) {
+        balanceInput.value = (user.balance ? user.balance.toLocaleString('vi-VN') : '0') + ' VNĐ';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', renderAccountBalance);
+  </script>
+</body>
+</html>

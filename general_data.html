@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>General Data - GameVault</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+</head>
+<body>
+  <header class="header">
+    <nav class="navbar">
+      <button class="home-btn" onclick="window.location.href='index.html'">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/home_button.png" alt="Gamevault">
+      </button>
+      <div class="auth-buttons">
+        <button class="auth-btn" onclick="openAuthModal()">Đăng ký/Đăng nhập</button>
+      </div>
+      <div class="user-info" onclick="goToAccount()" style="display: none;">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/gamer.png" alt="Avatar" class="user-avatar">
+        <span class="username"></span>
+      </div>
+      <div class="header-buttons">
+        <button class="search-btn neon-btn" onclick="openSearchModal()">🔍</button>
+        <button class="cart-btn neon-btn" onclick="goToCart()">🛒</button>
+        <button class="top-up-btn neon-btn" onclick="openTopUpModal()">💳</button>
+        <button class="globe-btn neon-btn" onclick="toggleLanguageMenu()">🌐</button>
+        <button class="theme-toggle neon-btn" onclick="toggleTheme()">🌙</button>
+      </div>
+    </nav>
+  </header>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>© 2025 GameVault. Bảo lưu mọi quyền.</p>
+      <div class="footer-links">
+        <a href="#">Về Chúng Tôi</a> | <a href="#">Điều khoản Dịch Vụ</a> | <a href="#">Chính Sách Bảo Mật</a> | <a href="#">Liên Hệ</a>
+      </div>
+    </div>
+  </footer>
+
+  <div id="auth-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('auth-modal')">×</span>
+      <h2 id="modal-title" class="neon-text">Đăng nhập</h2>
+      <input type="text" id="auth-username" class="neon-input" placeholder="Tên đăng nhập">
+      <input type="password" id="auth-password" class="neon-input" placeholder="Mật khẩu">
+      <button class="neon-btn" onclick="handleAuth()">Xác nhận</button>
+      <p class="toggle-auth" onclick="toggleAuthMode()">Chưa có tài khoản? Đăng ký!</p>
+    </div>
+  </div>
+
+  <div id="top-up-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('top-up-modal')">×</span>
+      <h2 class="neon-text">💳</h2>
+      <div class="neon-select">
+        <select>
+          <option>Chuyển khoản ngân hàng</option>
+          <option>Ví điện tử</option>
+          <option>Thẻ tín dụng</option>
+        </select>
+      </div>
+      <input type="text" class="neon-input" placeholder="Số tiền">
+      <button class="neon-btn">Xác nhận</button>
+    </div>
+  </div>
+
+  <div id="search-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('search-modal')">×</span>
+      <h2 class="neon-text">Tìm kiếm</h2>
+      <input type="text" id="search-input" class="neon-input" placeholder="Nhập tên sản phẩm hoặc game...">
+      <button class="neon-btn" onclick="searchProducts()">Tìm</button>
+    </div>
+  </div>
+
+  <div id="language-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('language-modal')">×</span>
+      <h2 class="neon-text">Chọn Ngôn Ngữ</h2>
+      <div class="carousel" id="language-carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item"><img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/VN.png" alt="Tiếng Việt"><h3>Tiếng Việt</h3></div>
+          <div class="carousel-item"><img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/EN.png" alt="English"><h3>English</h3></div>
+          <div class="carousel-item"><img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/China.png" alt="日本語"><h3>日本語</h3></div>
+        </div>
+      </div>
+      <button class="neon-btn">Chọn</button>
+    </div>
+  </div>
+
+  <div id="admin-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('admin-modal')">×</span>
+      <h2 class="neon-text">Đăng nhập Quản trị viên</h2>
+      <input type="password" id="admin-key1" class="neon-input" placeholder="Mật khẩu 1">
+      <input type="password" id="admin-key2" class="neon-input" placeholder="Mật khẩu 2">
+      <input type="password" id="admin-key3" class="neon-input" placeholder="Mật khẩu 3">
+      <button class="neon-btn" onclick="handleAdminLogin()">Xác nhận</button>
+    </div>
+  </div>
+
+  <div id="add-game-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('add-game-modal')">×</span>
+      <h2 class="neon-text">Thêm/Chỉnh sửa Game</h2>
+      <input type="text" id="game-image-url" class="neon-input" placeholder="URL ảnh game" oninput="updateGameImagePreview()">
+      <img id="game-image-preview" src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/add.png" alt="Game Preview">
+      <input type="text" id="game-name" class="neon-input" placeholder="Tên game">
+      <button class="neon-btn" onclick="saveGame()">Lưu</button>
+    </div>
+  </div>
+
+  <div id="edit-banner-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('edit-banner-modal')">×</span>
+      <h2 class="neon-text">Chỉnh sửa Banner</h2>
+      <input type="text" id="banner-image-url" class="neon-input" placeholder="URL ảnh banner" oninput="updateBannerImagePreview()">
+      <img id="banner-image-preview" src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/add.png" alt="Banner Preview">
+      <button class="neon-btn" onclick="saveBanner()">Lưu</button>
+    </div>
+  </div>
+
+  <div id="set-hot-deal-time-modal" class="modal">
+    <div class="modal-content neon-card">
+      <span class="close-modal" onclick="closeModal('set-hot-deal-time-modal')">×</span>
+      <h2 class="neon-text">Set Thời gian Hot Deal</h2>
+      <label>Ngày hết hạn:</label>
+      <input type="number" id="hot-deal-days" class="neon-input" placeholder="Ngày">
+      <label>Giờ:</label>
+      <input type="number" id="hot-deal-hours" class="neon-input" placeholder="Giờ">
+      <label>Phút:</label>
+      <input type="number" id="hot-deal-minutes" class="neon-input" placeholder="Phút">
+      <label>Giây:</label>
+      <input type="number" id="hot-deal-seconds" class="neon-input" placeholder="Giây">
+      <button class="neon-btn" onclick="saveHotDealTime()">Lưu</button>
+    </div>
+  </div>
+
+  <script src="js/scripts.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9502c3056d600455',t:'MTc0OTk5Nzc4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

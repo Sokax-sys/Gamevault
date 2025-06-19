@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/styles.css">
+  <title>Thanh Toán</title>
+  <style>
+    body { font-family: 'Orbitron', sans-serif; background: #0e1a2b; color: #fff; margin: 0; }
+    .checkout-container { max-width: 1000px; min-width: 1000px; margin: 40px auto; background: #181f2a; border-radius: 16px; box-shadow: 0 0 24px #00f0ff44; padding: 32px 24px; }
+    .neon-text { color: #00f0ff; text-shadow: 0 0 8px #00f0ff; }
+    .checkout-section { margin-bottom: 32px; }
+    .product-table { width: 100%; border-collapse: collapse; background: #222b3a; border-radius: 12px; overflow: hidden; }
+    .neon-input {width: 375px;}
+    .product-table th, .product-table td { padding: 14px 10px; text-align: center; border-bottom: 1px solid #2a3b4d; }
+    .product-table th { background: #16202e; color: #00f0ff; font-size: 1.1rem; }
+    .product-table td img { width: 64px; height: 64px; object-fit: contain; border-radius: 8px; background: #222; display: block; margin: 0 auto 6px auto; }
+    .product-table td.product-name { font-weight: bold; color: #00f0ff; }
+    .product-table td { font-size: 1rem; }
+    .neon-input { background: #222b3a; color: #fff; border: 2px solid #00f0ff; border-radius: 10px; padding: 8px 12px; margin-right: 8px; }
+    .neon-btn { background: #00f0ff; color: #181f2a; border: none; border-radius: 10px; padding: 10px 20px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .neon-btn:hover { background: #00b8cc; }
+    .total { text-align: right; font-size: 1.2rem; }
+    #total-amount { color: #ffea00; font-size: 1.5rem; font-weight: bold; }
+    @media (max-width: 600px) {
+      .checkout-container { padding: 10px; }
+      .product-table th, .product-table td { padding: 6px 2px; font-size: 0.9rem; }
+      .product-table td img { width: 40px; height: 40px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <nav class="navbar">
+      <button class="home-btn" onclick="window.location.href='index.html'">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/home_button.png" alt="Gamevault">
+      </button>
+      <div class="auth-buttons">
+        <button class="auth-btn neon-btn" onclick="openAuthModal()">Đăng ký/Đăng nhập</button>
+      </div>
+      <div class="user-info" onclick="goToAccount()" style="display: none;">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/gamer.png" alt="Avatar" class="user-avatar">
+        <h3>Số dư tài khoản: <span id="account-balance">0 VNĐ</span></h3>
+        <span class="username"></span>
+      </div>
+      <div class="header-buttons">
+        <button class="search-btn neon-btn" onclick="openSearchModal()">🔍</button>
+        <button class="cart-btn neon-btn" onclick="goToCart()">🛒</button>
+        <button class="top-up-btn neon-btn" onclick="openTopUpModal()">💳</button>
+        <button class="globe-btn neon-btn" onclick="toggleLanguageMenu()">🌐</button>
+        <button class="theme-toggle neon-btn" onclick="toggleTheme()">🌙</button>
+      </div>
+    </nav>
+  </header>
+
+</div>
+  <div class="checkout-container">
+    <h2 class="neon-text">Thông Tin Thanh Toán</h2>
+    <div class="checkout-section">
+      <h3>Địa chỉ nhận hàng</h3>
+      <p id="shipping-address"></p>
+    </div>
+    <div class="checkout-section">
+      <h3>Người nhận hàng</h3>
+      <p id="recipient-info"></p>
+    </div>
+    <div class="checkout-section">
+      <h3>Chi tiết sản phẩm</h3>
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+          </tr>
+        </thead>
+        <tbody id="product-list"></tbody>
+      </table>
+    </div>
+    <div class="checkout-section">
+      <h3>Voucher</h3>
+      <input type="text" id="voucher-code" class="neon-input" placeholder="Nhập mã voucher">
+      <button class="neon-btn" onclick="applyVoucher()">Áp dụng</button>
+      <p id="voucher-message"></p>
+    </div>
+    <div class="checkout-section total">
+      <h3>Tổng số tiền</h3>
+      <p id="total-amount"></p>
+      <button class=" neon-btn" onclick="processPayment()">Thanh Toán</button>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <!-- Modal tìm kiếm nâng cao -->
+  <div id="search-modal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div style="background:#181f2a; border-radius:12px; padding:32px 24px; max-width:400px; width:90%; box-shadow:0 0 24px #00f0ff44; position:relative;">
+      <button onclick="closeSearchModal()" style="position:absolute; top:8px; right:12px; background:none; border:none; color:#00f0ff; font-size:1.5rem; cursor:pointer;">&times;</button>
+      <h3 class="neon-text">Tìm kiếm sản phẩm</h3>
+      <input id="search-input" class="neon-input" type="text" placeholder="Nhập tên sản phẩm hoặc game" oninput="searchProducts()" style="width:100%; margin-bottom:12px;">
+      <div id="search-results" style="max-height:500px; max-width: 500px; min-height: 200px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Modal nạp tiền nâng cao -->
+  <div id="top-up-modal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div style="background:#181f2a; border-radius:12px; padding:32px 24px; max-width:420px; width:95%; box-shadow:0 0 24px #00f0ff44; position:relative;">
+      <button onclick="closeModal('top-up-modal')" style="position:absolute; top:8px; right:12px; background:none; border:none; color:#00f0ff; font-size:1.5rem; cursor:pointer;">&times;</button>
+      <h3 class="neon-text">Nạp tiền</h3>
+      <div style="margin-bottom:12px;">
+        <label><input type="radio" name="payment-method" value="card" checked onchange="switchTopupForm()"> Thẻ cào</label>
+        <label style="margin-left:12px;"><input type="radio" name="payment-method" value="bank" onchange="switchTopupForm()"> Chuyển khoản</label>
+        <label style="margin-left:12px;"><input type="radio" name="payment-method" value="wallet" onchange="switchTopupForm()"> Ví điện tử</label>
+        <label style="margin-left:12px;"><input type="radio" name="payment-method" value="credit" onchange="switchTopupForm()"> Thẻ tín dụng</label>
+      </div>
+      <form id="card-payment" style="display:block; flex-direction:column; gap:8px;">
+        <select id="card-type" class="neon-input" style="width:100%; margin-bottom:8px;">
+          <option value="Viettel">Viettel</option>
+          <option value="Mobifone">Mobifone</option>
+          <option value="Vinaphone">Vinaphone</option>
+        </select>
+        <input id="card-code" class="neon-input" type="text" placeholder="Mã thẻ cào">
+        <input id="card-serial" class="neon-input" type="text" placeholder="Số seri">
+      </form>
+      <form id="bank-payment" style="display:none; flex-direction:column; gap:8px;">
+        <div style="background:#222b3a; border-radius:8px; padding:12px; margin-bottom:8px;">
+          <div><b>Ngân hàng:</b> Vietcombank</div>
+          <div><b>Số tài khoản:</b> <span id="bank-account-number">0123456789</span> <button type="button" class="neon-btn" style="padding:2px 8px; font-size:0.9em; margin-left:8px;" onclick="copyBankAccount()">Sao chép</button></div>
+          <div><b>Tên tài khoản:</b> NGUYEN VAN ADMIN</div>
+          <div style="margin-top:8px; text-align:center;">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=STK:1234567890;Bank:Vietcombank;Content:NaptienGameVault" alt="QR Code" class="qr-code">
+            <div style="color:#00f0ff; font-size:0.95em; margin-top:4px;">Quét mã QR để chuyển khoản</div>
+          </div>
+        </div>
+        <input id="bank-amount" class="neon-input" type="number" min="10000" placeholder="Số tiền (VNĐ)">
+        <label style="color:#00f0ff; margin-bottom:4px;">Tải lên biên lai chuyển khoản:</label>
+        <input id="bank-receipt" class="neon-input" type="file" accept="image/*">
+      </form>
+      <form id="wallet-payment" style="display:none; flex-direction:column; gap:8px;">
+        <input id="wallet-id" class="neon-input" type="text" placeholder="ID ví điện tử">
+        <input id="wallet-amount" class="neon-input" type="number" min="10000" placeholder="Số tiền (VNĐ)">
+      </form>
+      <form id="credit-payment" style="display:none; flex-direction:column; gap:8px;">
+        <input id="credit-card-number" class="neon-input" type="text" placeholder="Số thẻ tín dụng">
+        <input id="credit-expiry" class="neon-input" type="text" placeholder="MM/YY">
+        <input id="credit-cvv" class="neon-input" type="text" placeholder="CVV">
+      </form>
+      <button class="neon-btn" style="width:100%; margin-top:12px;" onclick="processTopUp()" type="button">Xác nhận nạp</button>
+    </div>
+  </div>
+  <!-- Modal chọn ngôn ngữ -->
+  <div id="language-modal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div style="background:#181f2a; border-radius:12px; padding:32px 24px; max-width:350px; width:90%; box-shadow:0 0 24px #00f0ff44; position:relative;">
+      <button onclick="closeModal('language-modal')" style="position:absolute; top:8px; right:12px; background:none; border:none; color:#00f0ff; font-size:1.5rem; cursor:pointer;">&times;</button>
+      <h3 class="neon-text">Chọn ngôn ngữ</h3>
+      <label><input type="radio" name="language" value="vi"> Tiếng Việt</label><br>
+      <label><input type="radio" name="language" value="en"> English</label><br>
+      <button class="neon-btn" style="margin-top:12px; width:100%;" onclick="saveLanguage()">Lưu</button>
+    </div>
+  </div>
+
+  <!-- Modal Đăng ký/Đăng nhập -->
+  <div id="auth-modal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div style="background:#181f2a; border-radius:12px; padding:32px 24px; max-width:350px; width:90%; box-shadow:0 0 24px #00f0ff44; position:relative;">
+      <button onclick="closeModal('auth-modal')" style="position:absolute; top:8px; right:12px; background:none; border:none; color:#00f0ff; font-size:1.5rem; cursor:pointer;">&times;</button>
+      <h3 id="modal-title" class="neon-text">Đăng nhập</h3>
+      <input id="auth-username" class="neon-input" type="text" placeholder="Tên đăng nhập" style="width:100%; margin-bottom:8px;">
+      <input id="auth-password" class="neon-input" type="password" placeholder="Mật khẩu" style="width:100%; margin-bottom:8px;">
+      <div id="signup-extra" style="display:none;">
+        <input id="auth-phone" class="neon-input" type="text" placeholder="Số điện thoại" style="width:100%; margin-bottom:8px;">
+        <input id="auth-address" class="neon-input" type="text" placeholder="Địa chỉ nhận hàng" style="width:100%; margin-bottom:8px;">
+      </div>
+      <button class="neon-btn" style="width:100%; margin-bottom:8px;" onclick="handleAuth()">Xác nhận</button>
+      <div class="toggle-auth" style="color:#00f0ff; text-align:center; cursor:pointer;" onclick="toggleAuthMode()">Chưa có tài khoản? Đăng ký!</div>
+    </div>
+  </div>
+
+  <script>
+    // ===== HEADER FUNCTIONS =====
+    function openAuthModal() {
+      isSignUpMode = false;
+      updateAuthModal();
+      openModal('auth-modal');
+    }
+    function goToAccount() {
+      window.location.href = 'account.html';
+    }
+    function goToCart() {
+      window.location.href = 'cart.html';
+    }
+    function openTopUpModal() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.username) {
+        showToast('Vui lòng đăng nhập trước khi nạp tiền!', 'error');
+        openAuthModal();
+        return;
+      }
+      openModal('top-up-modal');
+    }
+
+    function toggleLanguageMenu() {
+      openModal('language-modal');
+      loadLanguage();
+    }
+
+    function saveLanguage() {
+      const selectedLang = document.querySelector('input[name="language"]:checked');
+      if (selectedLang) {
+        localStorage.setItem('language', selectedLang.value);
+        showToast('Đã lưu ngôn ngữ!');
+        closeModal('language-modal');
+      } else {
+        showToast('Vui lòng chọn ngôn ngữ!', 'error');
+      }
+    }
+
+    function loadLanguage() {
+      const lang = localStorage.getItem('language') || 'vi';
+      const radio = document.querySelector(`input[name="language"][value="${lang}"]`);
+      if (radio) radio.checked = true;
+    }
+
+    function openSearchModal() {
+      document.getElementById('search-modal').style.display = 'flex';
+      document.getElementById('search-input').focus();
+      document.getElementById('search-input').value = '';
+      document.getElementById('search-results').innerHTML = '';
+    }
+    function closeSearchModal() {
+      document.getElementById('search-modal').style.display = 'none';
+    }
+    function searchProducts() {
+      const query = document.getElementById('search-input').value.trim().toLowerCase();
+      const resultsDiv = document.getElementById('search-results');
+      resultsDiv.innerHTML = '';
+      if (!query) return;
+      // Lấy dữ liệu sản phẩm từ localStorage (giả lập)
+      const products = JSON.parse(localStorage.getItem('productsData') || '[]');
+      const filtered = products.filter(p => p.name.toLowerCase().includes(query) || (p.game && p.game.toLowerCase().includes(query)));
+      if (filtered.length === 0) {
+        resultsDiv.innerHTML = '<p style="color:#ffea00">Không tìm thấy sản phẩm nào!</p>';
+        return;
+      }
+      filtered.forEach(product => {
+        const div = document.createElement('div');
+        div.className = 'product-item';
+        div.style = 'padding:8px 0; border-bottom:1px solid #222b3a; display:flex; align-items:center;';
+        div.innerHTML = `
+          <img src="${product.image}" alt="${product.name}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; margin-right:12px; background:#222;">
+          <div style="flex:1;">
+            <strong style="color:#00f0ff">${product.name}</strong><br>
+            <span style="color:#aaa; font-size:0.95em;">${product.game || ''}</span>
+          </div>
+          <button class="neon-btn" style="padding:6px 12px; font-size:0.95em;" onclick="goToProduct('${product.id}')">Xem</button>
+        `;
+        resultsDiv.appendChild(div);
+      });
+    }
+    function goToProduct(id) {
+      // Điều hướng đến trang chi tiết sản phẩm (giả lập)
+      window.location.href = `product.html?id=${id}`;
+    }
+
+    function toggleLanguageMenu() {
+      alert('Chức năng Đổi ngôn ngữ đang phát triển!');
+    }
+  
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+      const themeToggle = document.querySelector('.theme-toggle');
+      if (themeToggle) themeToggle.textContent = document.body.classList.contains('light-theme') ? '☀️' : '🌙';
+      localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+    }
+    function loadTheme() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'light') {
+        document.body.classList.add('light-theme');
+        const themeToggle = document.querySelector('.theme-toggle');
+        if (themeToggle) themeToggle.textContent = '☀️';
+      }
+    }
+
+    function toggleContextMenu(event, type, index) {
+      if (!isAdmin) {
+        showToast('Chỉ quản trị viên mới có thể sử dụng tính năng này!', 'error');
+        return;
+      }
+      event.preventDefault();
+      const contextMenu = document.getElementById(`${type}-context-menu`);
+      if (contextMenu) {
+        contextMenu.style.top = `${event.clientY}px`;
+        contextMenu.style.left = `${event.clientX}px`;
+        contextMenu.dataset[`${type}Index`] = index;
+        contextMenu.classList.add('active');
+        document.addEventListener('click', function hideMenu(e) {
+          if (!contextMenu.contains(e.target)) {
+            contextMenu.classList.remove('active');
+            document.removeEventListener('click', hideMenu);
+          }
+        });
+      }
+    }
+
+    function toggleLanguageMenu() {
+      openModal('language-modal');
+      loadLanguage();
+    }
+
+    function saveLanguage() {
+      const selectedLang = document.querySelector('input[name="language"]:checked');
+      if (selectedLang) {
+        localStorage.setItem('language', selectedLang.value);
+        showToast('Đã lưu ngôn ngữ!');
+        closeModal('language-modal');
+      } else {
+        showToast('Vui lòng chọn ngôn ngữ!', 'error');
+      }
+    }
+
+    function loadLanguage() {
+      const lang = localStorage.getItem('language') || 'vi';
+      const radio = document.querySelector(`input[name="language"][value="${lang}"]`);
+      if (radio) radio.checked = true;
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    let isSignUpMode = false;
+    function openAuthModal() {
+      isSignUpMode = false;
+      updateAuthModal();
+      openModal('auth-modal');
+    }
+
+    function toggleAuthMode() {
+      isSignUpMode = !isSignUpMode;
+      updateAuthModal();
+    }
+
+    function updateAuthModal() {
+      document.getElementById('modal-title').textContent = isSignUpMode ? 'Đăng ký' : 'Đăng nhập';
+      document.querySelector('.toggle-auth').textContent = isSignUpMode ? 'Đã có tài khoản? Đăng nhập ngay!' : 'Chưa có tài khoản? Đăng ký!';
+      document.getElementById('signup-extra').style.display = isSignUpMode ? 'block' : 'none';
+    }
+
+    function handleAuth() {
+      const username = document.getElementById('auth-username').value.trim();
+      const password = document.getElementById('auth-password').value.trim();
+      if (!username || !password) {
+        showToast('Vui lòng nhập đầy đủ thông tin!', 'error');
+        return;
+      }
+      if (isSignUpMode) {
+        // Đăng ký
+        const phone = document.getElementById('auth-phone').value.trim();
+        const address = document.getElementById('auth-address').value.trim();
+        if (!phone || !address) {
+          showToast('Vui lòng nhập số điện thoại và địa chỉ!', 'error');
+          return;
+        }
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        if (users.find(u => u.username === username)) {
+          showToast('Tên đăng nhập đã tồn tại!', 'error');
+          return;
+        }
+        const newUser = { username, password, phone, shippingAddress: address, balance: 0, orders: [] };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        localStorage.setItem('user', JSON.stringify(newUser));
+        showToast('Đăng ký thành công!');
+        closeModal('auth-modal');
+        updateHeaderUser();
+      } else {
+        // Đăng nhập
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const user = users.find(u => u.username === username && u.password === password);
+        if (!user) {
+          showToast('Sai tên đăng nhập hoặc mật khẩu!', 'error');
+          return;
+        }
+        localStorage.setItem('user', JSON.stringify(user));
+        showToast('Đăng nhập thành công!');
+        closeModal('auth-modal');
+        updateHeaderUser();
+      }
+    }
+
+    function updateHeaderUser() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const authBtns = document.querySelector('.auth-buttons');
+      const userInfo = document.querySelector('.user-info');
+      if (user.username) {
+        if(authBtns) authBtns.style.display = 'none';
+        if(userInfo) {
+          userInfo.style.display = 'flex';
+          userInfo.querySelector('.username').textContent = user.username;
+          userInfo.querySelector('#account-balance').textContent = (user.balance ? user.balance.toLocaleString('vi-VN') : '0') + ' VNĐ';
+        }
+      } else {
+        if(authBtns) authBtns.style.display = 'block';
+        if(userInfo) userInfo.style.display = 'none';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', updateHeaderUser);
+    // ===== FOOTER FUNCTIONS =====
+    // Có thể thêm các chức năng cho footer nếu cần
+    // ===== CHECKOUT FUNCTIONS (giữ nguyên) =====
+    function formatCurrency(n) { return n.toLocaleString('vi-VN') + ' đ'; }
+    function renderCheckout() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      document.getElementById('shipping-address').textContent = user.shippingAddress || 'Chưa cập nhật';
+      document.getElementById('recipient-info').textContent = user.username ? `${user.username} (${user.phone || 'Chưa có SĐT'})` : 'Chưa đăng nhập';
+      const cart = (JSON.parse(localStorage.getItem('cart') || '[]')).filter(item => item.selected !== false);
+      const tbody = document.getElementById('product-list');
+      tbody.innerHTML = '';
+      let total = 0;
+      cart.forEach(item => {
+        const price = item.options && item.options.length ? (item.options.find(o => o.value === item.selectedOption)?.price || item.options[0].price) : (item.price || 0);
+        const quantity = item.quantity || 1;
+        const sum = price * quantity;
+        total += sum;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="product-name">
+            <img src="${item.image}" alt="${item.name}" onerror="this.src='https://raw.githubusercontent.com/Sokax-sys/Photos/master/gamer.png'">
+            <div>${item.name}</div>
+          </td>
+          <td>${formatCurrency(price)}</td>
+          <td>${quantity}</td>
+          <td>${formatCurrency(sum)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('total-amount').textContent = formatCurrency(total);
+    }
+    document.addEventListener('DOMContentLoaded', renderCheckout);
+    function applyVoucher() {
+      document.getElementById('voucher-message').textContent = 'Chức năng đang phát triển!';
+    }
+    function processPayment() {
+      document.getElementById('toast').textContent = 'Chức năng đang phát triển!';
+      document.getElementById('toast').style.display = 'block';
+      setTimeout(()=>{document.getElementById('toast').style.display='none';},2000);
+    }
+    function copyBankAccount() {
+      const acc = document.getElementById('bank-account-number').textContent;
+      navigator.clipboard.writeText(acc);
+      showToast('Đã sao chép số tài khoản!');
+    }
+
+    // Hàm này sẽ được gọi khi user nạp tiền, lưu giao dịch cho admin quản lý
+function addTopupTransactionForAdmin(transaction) {
+  let admin = JSON.parse(localStorage.getItem('admin') || '{}');
+  admin.topupRequests = admin.topupRequests || [];
+  admin.topupRequests.unshift(transaction);
+  localStorage.setItem('admin', JSON.stringify(admin));
+}
+
+    function processTopUp() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const selectedMethod = document.querySelector('input[name="payment-method"]:checked').value;
+      let transaction = {
+        username: user.username,
+        method: selectedMethod,
+        date: new Date().toISOString(),
+        status: 'pending'
+      };
+      let amount = 0;
+      if (selectedMethod === 'card') {
+        const cardType = document.getElementById('card-type').value;
+        const cardCode = document.getElementById('card-code').value.trim();
+        const cardSerial = document.getElementById('card-serial').value.trim();
+        if (!cardCode || !cardSerial) {
+          showToast('Vui lòng nhập mã thẻ và số seri!', 'error');
+          return;
+        }
+        if (!/^\d{12,16}$/.test(cardCode) || !/^\d{10,14}$/.test(cardSerial)) {
+          showToast('Mã thẻ hoặc số seri không hợp lệ!', 'error');
+          return;
+        }
+        amount = 100000; // Giả lập số tiền
+        transaction = { ...transaction, cardType, cardCode, cardSerial, amount };
+        finalizeTopup(transaction);
+      } else if (selectedMethod === 'bank') {
+        amount = parseInt(document.getElementById('bank-amount').value) || 0;
+        const receipt = document.getElementById('bank-receipt').files[0];
+        if (amount <= 0) {
+          showToast('Số tiền phải lớn hơn 0!', 'error');
+          return;
+        }
+        if (!receipt || !receipt.type.startsWith('image/')) {
+          showToast('Vui lòng tải lên biên lai là file ảnh!', 'error');
+          return;
+        }
+        // Đọc file ảnh thành dataURL để lưu
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          transaction = { ...transaction, amount, receiptName: receipt.name, receiptDataUrl: e.target.result };
+          finalizeTopup(transaction);
+        };
+        reader.readAsDataURL(receipt);
+        return; // Dừng lại, finalizeTopup sẽ được gọi sau khi đọc xong file
+      } else if (selectedMethod === 'wallet') {
+        const walletId = document.getElementById('wallet-id').value.trim();
+        amount = parseInt(document.getElementById('wallet-amount').value) || 0;
+        if (!walletId || amount <= 0) {
+          showToast('Vui lòng nhập ID ví và số tiền hợp lệ!', 'error');
+          return;
+        }
+        transaction = { ...transaction, walletId, amount };
+        finalizeTopup(transaction);
+      } else if (selectedMethod === 'credit') {
+        const cardNumber = document.getElementById('credit-card-number').value.trim();
+        const expiry = document.getElementById('credit-expiry').value.trim();
+        const cvv = document.getElementById('credit-cvv').value.trim();
+        if (!cardNumber || !expiry || !cvv) {
+          showToast('Vui lòng nhập đầy đủ thông tin thẻ tín dụng!', 'error');
+          return;
+        }
+        if (!/^\d{16}$/.test(cardNumber) || !/^\d{2}\/\d{2}$/.test(expiry) || !/^\d{3}$/.test(cvv)) {
+          showToast('Thông tin thẻ tín dụng không hợp lệ!', 'error');
+          return;
+        }
+        amount = 100000; // Giả lập số tiền
+        transaction = { ...transaction, cardNumber: cardNumber.slice(-4), amount };
+        finalizeTopup(transaction);
+      }
+    }
+    function finalizeTopup(transaction) {
+      // Lưu giao dịch vào localStorage cho admin duyệt
+      let topupTransactions = JSON.parse(localStorage.getItem('topupTransactions') || '[]');
+      topupTransactions.push(transaction);
+      localStorage.setItem('topupTransactions', JSON.stringify(topupTransactions));
+      // Gửi cho admin
+      let admin = JSON.parse(localStorage.getItem('admin') || '{}');
+      admin.topupRequests = admin.topupRequests || [];
+      admin.topupRequests.unshift(transaction);
+      localStorage.setItem('admin', JSON.stringify(admin));
+      // Thêm thông báo cho user
+      let user = JSON.parse(localStorage.getItem('user') || '{}');
+      user.notifications = user.notifications || [];
+      user.notifications.unshift({
+        message: 'Đang nạp tiền, vui lòng đợi',
+        date: new Date().toLocaleString(),
+        type: 'topup',
+        status: 'pending'
+      });
+      localStorage.setItem('user', JSON.stringify(user));
+      // Đóng modal và chuyển sang trang tài khoản
+      closeModal('top-up-modal');
+      showToast('Đang nạp tiền, vui lòng đợi');
+      setTimeout(() => {
+        window.location.href = 'account.html';
+      }, 1200);
+    }
+
+    function switchTopupForm() {
+      const method = document.querySelector('input[name="payment-method"]:checked').value;
+      document.getElementById('card-payment').style.display = method === 'card' ? 'flex' : 'none';
+      document.getElementById('bank-payment').style.display = method === 'bank' ? 'flex' : 'none';
+      document.getElementById('wallet-payment').style.display = method === 'wallet' ? 'flex' : 'none';
+      document.getElementById('credit-payment').style.display = method === 'credit' ? 'flex' : 'none';
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      // Đảm bảo form top-up chuyển đổi đúng khi mở modal
+      const paymentMethods = document.querySelectorAll('input[name="payment-method"]');
+      paymentMethods.forEach(method => {
+        method.addEventListener('change', switchTopupForm);
+      });
+      // Khi mở modal, luôn hiển thị đúng form đầu tiên
+      if (document.getElementById('card-payment')) switchTopupForm();
+    });
+  </script>
+</body>
+  <footer class="footer">
+    <div class="footer-content">
+      <p>© 2025 GameVault. Bảo lưu mọi quyền.</p>
+      <div class="footer-links">
+        <a href="#">Về Chúng Tôi</a> | <a href="#">Điều khoản Dịch Vụ</a> | <a href="#">Chính Sách Bảo Mật</a> | <a href="#">Liên Hệ</a>
+      </div>
+    </div>
+  </footer>
+</html>

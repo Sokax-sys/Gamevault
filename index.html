@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameVault</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="scripts.js" defer></script>
+</head>
+<body>
+  <header class="header">
+    <nav class="navbar">
+      <button class="home-btn" onclick="window.location.href='index.html'">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/home_button.png" alt="Gamevault">
+      </button>
+      <div class="auth-buttons">
+        <button class="auth-btn neon-btn" onclick="openAuthModal()">Đăng ký/Đăng nhập</button>
+      </div>
+      <div class="user-info" onclick="goToAccount()" style="display: none;">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/gamer.png" alt="Avatar" class="user-avatar">
+        <span class="username"></span>
+      </div>
+      <div class="header-buttons">
+        <button class="search-btn neon-btn" onclick="openSearchModal()">🔍</button>
+        <button class="cart-btn neon-btn" onclick="goToCart()">🛒</button>
+        <button class="top-up-btn neon-btn" onclick="openTopUpModal()">💳</button>
+        <button class="globe-btn neon-btn" onclick="toggleLanguageMenu()">🌐</button>
+        <button class="theme-toggle neon-btn" onclick="toggleTheme()">🌙</button>
+      </div>
+    </nav>
+  </header>
+  
+  <main>
+    <section class="hero">
+      <h1 class="hero-title">Nâng tầm trải nghiệm chơi game của bạn</h1>
+      <div class="hero-carousel" id="banner-carousel"></div>
+    </section>
+
+    <section class="category">
+      <h2 class="neon-text">Danh mục Game</h2>
+      <div class="carousel">
+        <button class="carousel-control prev" onclick="prevSlide('game-carousel')">◄</button>
+        <div class="carousel-inner" id="game-carousel"></div>
+        <button class="carousel-control next" onclick="nextSlide('game-carousel')">►</button>
+        <button class="neon-btn admin-only" onclick="openAddGameModal()">Thêm game</button>
+      </div>
+    </section>
+
+    <section class="hot-deal">
+      <h2 class="neon-text">Hot Deal</h2>
+      <div class="hot-deal-list" id="hot-deal-list"></div>
+      <p id="no-hot-deals" style="display: none;">Chưa có deal hot nào để săn!</p>
+      <p id="hot-deal-countdown"></p>
+      <div class="admin-only">
+        <button class="neon-btn" onclick="openSetHotDealTimeModal()">Set thời gian Hot Deal</button>
+        <button class="neon-btn" onclick="window.location.href='product.html'">Sửa sản phẩm</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>© 2025 GameVault. Bảo lưu mọi quyền.</p>
+      <div class="footer-links">
+        <a href="#">Về Chúng Tôi</a> | <a href="#">Điều khoản Dịch Vụ</a> | <a href="#">Chính Sách Bảo Mật</a> | <a href="#">Liên Hệ</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal" id="auth-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('auth-modal')">×</span>
+      <h2 id="modal-title">Đăng nhập</h2>
+      <input type="text" id="auth-username" class="neon-input" placeholder="Tên đăng nhập">
+      <input type="password" id="auth-password" class="neon-input" placeholder="Mật khẩu">
+      <button class="neon-btn" onclick="handleAuth()">Xác nhận</button>
+      <p class="toggle-auth" onclick="toggleAuthMode()">Chưa có tài khoản? Đăng ký!</p>
+    </div>
+  </div>
+
+  <div class="modal" id="top-up-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('top-up-modal')">×</span>
+      <h2>Nạp tiền</h2>
+      <div class="payment-methods">
+        <label><input type="radio" name="payment-method" value="card" checked> Thẻ nạp</label>
+        <label><input type="radio" name="payment-method" value="bank"> Chuyển khoản ngân hàng</label>
+        <label><input type="radio" name="payment-method" value="wallet"> Ví điện tử</label>
+        <label><input type="radio" name="payment-method" value="credit"> Thẻ tín dụng</label>
+      </div>
+      <div id="card-payment" class="payment-form">
+        <select id="card-type" class="neon-select">
+          <option value="viettel">Viettel Money</option>
+          <option value="mobifone">MobiFone</option>
+          <option value="vinaphone">VinaPhone</option>
+          <option value="gate">Gate</option>
+          <option value="zing">Zing</option>
+        </select>
+        <input type="text" id="card-code" class="neon-input" placeholder="Mã thẻ">
+        <input type="text" id="card-serial" class="neon-input" placeholder="Số seri">
+      </div>
+      <div id="bank-payment" class="payment-form" style="display: none;">
+        <p>Thông tin chuyển khoản:</p>
+        <p>Ngân hàng: Vietcombank</p>
+        <p>Số tài khoản: 12345678901234</p>
+        <p>Chủ tài khoản: Nguyễn Việt Khôi</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=STK:1234567890;Bank:Vietcombank;Content:NaptienGameVault" alt="QR Code" class="qr-code">
+        <input type="number" id="bank-amount" class="neon-input" placeholder="Số tiền (VNĐ)">
+        <input type="file" id="bank-receipt" class="neon-input" accept="image/*" placeholder="Tải lên biên lai">
+      </div>
+      <div id="wallet-payment" class="payment-form" style="display: none;">
+        <p>Chọn ví điện tử: Momo, ZaloPay, Viettel Pay</p>
+        <input type="text" id="wallet-id" class="neon-input" placeholder="ID ví điện tử">
+        <input type="number" id="wallet-amount" class="neon-input" placeholder="Số tiền (VNĐ)">
+      </div>
+      <div id="credit-payment" class="payment-form" style="display: none;">
+        <input type="text" id="credit-card-number" class="neon-input" placeholder="Số thẻ tín dụng">
+        <input type="text" id="credit-expiry" class="neon-input" placeholder="Ngày hết hạn (MM/YY)">
+        <input type="text" id="credit-cvv" class="neon-input" placeholder="CVV">
+      </div>
+      <button class="neon-btn" onclick="processTopUp()">Xác nhận</button>
+    </div>
+  </div>
+
+  <div class="modal" id="search-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('search-modal')">&times;</span>
+      <h2>Tìm kiếm</h2>
+      <input type="text" id="search-input" class="neon-input" placeholder="Tìm kiếm sản phẩm...">
+      <input type="number" id="min-price" class="neon-input" placeholder="Giá tối thiểu">
+      <input type="number" id="max-price" class="neon-input" placeholder="Giá tối đa">
+      <button class="neon-btn" onclick="searchProducts()">Tìm</button>
+      <div id="search-results"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="language-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('language-modal')">×</span>
+      <h2>Chọn Ngôn Ngữ</h2>
+      <div class="language-options">
+        <label><input type="radio" name="language" value="vi"> Tiếng Việt</label>
+        <label><input type="radio" name="language" value="en"> English</label>
+        <label><input type="radio" name="language" value="ja"> 日本語</label>
+      </div>
+      <button class="neon-btn" onclick="closeModal('language-modal')">Chọn</button>
+    </div>
+  </div>
+
+  <div class="modal" id="admin-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('admin-modal')">×</span>
+      <h2>Đăng nhập Quản trị viên</h2>
+      <input type="password" id="admin-key1" class="neon-input" placeholder="Key 1">
+      <input type="password" id="admin-key2" class="neon-input" placeholder="Key 2">
+      <input type="password" id="admin-key3" class="neon-input" placeholder="Key 3">
+      <button class="neon-btn" onclick="handleAdminLogin()">Xác nhận</button>
+    </div>
+  </div>
+
+  <div class="modal" id="add-game-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('add-game-modal')">×</span>
+      <h2>Thêm/Chỉnh sửa Game</h2>
+      <input type="text" id="game-image-url" class="neon-input" placeholder="URL ảnh game" oninput="updateGameImagePreview()">
+      <input type="text" id="game-name" class="neon-input" placeholder="Tên game">
+      <img id="game-image-preview" src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/add.png" alt="Game Preview">
+      <button class="neon-btn" onclick="saveGame()">Lưu</button>
+    </div>
+  </div>
+
+  <div class="modal" id="edit-banner-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('edit-banner-modal')">×</span>
+      <h2>Chỉnh sửa Banner</h2>
+      <input type="text" id="banner-image-url" class="neon-input" placeholder="URL ảnh banner" oninput="updateBannerImagePreview()">
+      <img id="banner-image-preview" src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/add.png" alt="Banner Preview">
+      <button class="neon-btn" onclick="saveBanner()">Lưu</button>
+    </div>
+  </div>
+
+  <div class="modal" id="set-hot-deal-time-modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('set-hot-deal-time-modal')">×</span>
+      <h2>Set Thời gian Hot Deal</h2>
+      <label>Ngày hết hạn:</label>
+      <input type="number" id="hot-deal-days" class="neon-input" placeholder="Số ngày">
+      <label>Giờ:</label>
+      <input type="number" id="hot-deal-hours" class="neon-input" placeholder="Số giờ">
+      <label>Phút:</label>
+      <input type="number" id="hot-deal-minutes" class="neon-input" placeholder="Số phút">
+      <label>Giây:</label>
+      <input type="number" id="hot-deal-seconds" class="neon-input" placeholder="Số giây">
+      <button class="neon-btn" onclick="saveHotDealTime()">Lưu</button>
+    </div>
+  </div>
+</body>
+</html>

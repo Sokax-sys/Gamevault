@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết sản phẩm - GameVault</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="header">
+    <div class="navbar">
+      <button class="home-btn" onclick="window.location.href='index.html'">
+        <img src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/home_button.png" alt="Home">
+      </button>
+      <div class="header-buttons auth-buttons">
+        <button class="neon-btn" onclick="openAuthModal()">Đăng ký/Đăng nhập</button>
+      </div>
+      <div class="header-buttons">
+        <button class="search-btn neon-btn" onclick="openSearchModal()">🔍</button>
+        <button class="cart-btn neon-btn" onclick="goToCart()">🛒</button>
+        <button class="top-up-btn neon-btn" onclick="openTopUpModal()">💳</button>
+        <button class="globe-btn neon-btn" onclick="toggleLanguageMenu()">🌐</button>
+        <button class="theme-toggle neon-btn" onclick="toggleTheme()">🌙</button>
+      </div>
+      <div class="user-info" onclick="openUserContextMenu(event)">
+        <img class="user-avatar" src="https://raw.githubusercontent.com/Sokax-sys/Photos/master/gamer.png" alt="Avatar">
+        <span class="username"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-detail-container">
+    <div class="product-image-carousel">
+      <div class="carousel-inner" id="product-image-carousel">
+        <!-- Hình ảnh sẽ được thêm động bởi JS -->
+      </div>
+      <button class="carousel-control prev" onclick="prevProductSlide()">◄</button>
+      <button class="carousel-control next" onclick="nextProductSlide()">►</button>
+    </div>
+    <div class="product-info">
+      <h2 id="product-name"></h2>
+      <div class="rating">
+        <span id="product-rating"></span> (<span id="rating-count"></span> đánh giá)
+      </div>
+      <p id="product-price" class="neon-text"></p>
+      <p>Địa điểm vận chuyển: <span id="delivery-location"></span>
+        <button class="neon-btn" onclick="changeDeliveryLocation()">Thay đổi</button>
+      </p>
+      <div class="quantity-control">
+        Số lượng: <button class="neon-btn" onclick="updateQuantity(-1)">-</button>
+        <span id="product-quantity">1</span>
+        <button class="neon-btn" onclick="updateQuantity(1)">+</button>
+      </div>
+      <button class="neon-btn" onclick="addToCartFromDetail()">Thêm vào giỏ</button>
+      <button class="neon-btn" onclick="handleCheckoutFromDetail()">Mua ngay</button>
+    </div>
+    <div class="admin-edit-section admin-only">
+      <button class="neon-btn" onclick="openAdminEditReviewModal()">Chỉnh sửa đánh giá chi tiết</button>
+    </div>
+    <div class="product-reviews">
+      <h3>Đánh giá chi tiết</h3>
+      <p id="admin-review"></p>
+      <h3>Đánh giá từ người dùng</h3>
+      <div id="user-reviews"></div>
+      <button class="neon-btn" id="add-review-btn" onclick="openReviewModal()">Thêm đánh giá</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-content">
+      <p>© 2025 GameVault. Bảo lưu mọi quyền.</p>
+      <div class="footer-links">
+        <a href="#">Về Chúng Tôi</a> | <a href="#">Điều khoản Dịch Vụ</a> | <a href="#">Chính Sách Bảo Mật</a> | <a href="#">Liên Hệ</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="product-options">
+    <label>Phân loại: </label>
+    <select id="product-option" class="neon-select">
+      <option value="default">Mặc định</option>
+      <option value="premium">Cao cấp</option>
+    </select>
+  </div>
+
+  <!-- Modals -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('auth-modal')">×</span>
+      <h2 id="modal-title">Đăng nhập</h2>
+      <input type="text" id="auth-username" class="neon-input" placeholder="Tên đăng nhập">
+      <input type="password" id="auth-password" class="neon-input" placeholder="Mật khẩu">
+      <button class="neon-btn" onclick="handleAuth()">Xác nhận</button>
+      <p class="toggle-auth" onclick="toggleAuthMode()">Chưa có tài khoản? Đăng ký!</p>
+    </div>
+  </div>
+
+  <div id="top-up-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('top-up-modal')">×</span>
+      <h2>💳 Nạp tiền</h2>
+      <label><input type="radio" name="payment-method" value="bank"> Chuyển khoản ngân hàng</label>
+      <label><input type="radio" name="payment-method" value="ewallet"> Ví điện tử</label>
+      <label><input type="radio" name="payment-method" value="credit"> Thẻ tín dụng</label>
+      <button class="neon-btn" onclick="processPayment()">Xác nhận</button>
+    </div>
+  </div>
+
+  <div id="search-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('search-modal')">×</span>
+      <h2>Tìm kiếm</h2>
+      <input type="text" id="search-input" class="neon-input" placeholder="Nhập từ khóa..." onkeyup="searchProducts()">
+      <div id="search-results"></div>
+    </div>
+  </div>
+
+  <div id="language-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('language-modal')">×</span>
+      <h2>Chọn Ngôn Ngữ</h2>
+      <label><input type="radio" name="language" value="vi"> Tiếng Việt</label>
+      <label><input type="radio" name="language" value="en"> English</label>
+      <label><input type="radio" name="language" value="jp"> 日本語</label>
+      <button class="neon-btn" onclick="saveLanguage()">Chọn</button>
+    </div>
+  </div>
+
+  <div id="admin-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('admin-modal')">×</span>
+      <h2>Đăng nhập Quản trị viên</h2>
+      <input type="text" id="admin-key1" class="neon-input" placeholder="Key 1">
+      <input type="text" id="admin-key2" class="neon-input" placeholder="Key 2">
+      <input type="text" id="admin-key3" class="neon-input" placeholder="Key 3">
+      <button class="neon-btn" onclick="handleAdminLogin()">Xác nhận</button>
+    </div>
+  </div>
+
+  <div id="admin-edit-review-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('admin-edit-review-modal')">×</span>
+      <h2>Chỉnh sửa đánh giá chi tiết</h2>
+      <textarea id="admin-review-input" class="neon-input" rows="5"></textarea>
+      <button class="neon-btn" onclick="saveAdminReview()">Lưu</button>
+    </div>
+  </div>
+
+  <div id="review-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('review-modal')">×</span>
+      <h2>Thêm đánh giá</h2>
+      <textarea id="user-review-input" class="neon-input" rows="5" placeholder="Nhập đánh giá của bạn..."></textarea>
+      <button class="neon-btn" onclick="submitReview()">Gửi</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/scripts.js"></script>
+</body>
+</html>
